@@ -206,7 +206,7 @@ const ivrHandler = async (req, res) => {
   // A fresh variable name avoids conflicts with parameters retained by Yemot.
   if (hasConfirmation && confirmation !== '1') {
     return res.send(ask(
-      'בסדר, נקליט שוב. אמרו את שם הרחוב, �u�u�u�u��H5�u�u�u�5��u�',
+      'בסדר, נקליט שוב. אמרו את שם העיר ואחריו את שם הרחוב, וסיימו בסולמית',
       nextVoiceParam,
       nextRecordingName
     ));
