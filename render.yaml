@@ -17,3 +17,5 @@ services:
         value: "2"
       - key: DEBUG_KEY
         sync: false
+      - key: KEEP_ALIVE
+        value: "false"
