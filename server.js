@@ -117,7 +117,7 @@ const ask = (prompt, varName, file) =>
 // Keypad input: variable,use_previous,tap,minDigits,maxDigits,timeout,keyboard (same shape as the
 // record command above, where the 3rd field is the input type). One digit only.
 const askKey = (prompt, varName) =>
-  `read=t-${clean(prompt)}=${varName},no,tap,1,1,20,No`;
+  `read=t-${clean(prompt)}=${varName},no,1,1,20,No`;
 
 // ערך ההקלטה מימות עשוי להגיע כנתיב מלא או כשם קובץ בלבד.
 // בהקלטה שמורה לשלוחה /1, נתיב יחסי מפורש מתפרש ביחס לשלוחה זו.
@@ -290,9 +290,11 @@ app.post('/ivr', ivrHandler);
 
 app.listen(process.env.PORT || 3000);
 
-// Render's free plan puts an idle service to sleep; the first call after that waits 30-60s
-// and Yemot reports "no answer from the API server". Render sets RENDER_EXTERNAL_URL itself.
-if (process.env.RENDER_EXTERNAL_URL) {
+// Render free services sleep after 15 minutes with no inbound traffic and use a shared
+// monthly instance-hour allowance. Do not self-ping by default: it defeats idle sleep and can
+// consume the free allowance. Set KEEP_ALIVE=true only when you intentionally want to keep a
+// service awake and understand the compute-hour/cost implications. Render sets this URL itself.
+if (process.env.RENDER_EXTERNAL_URL && process.env.KEEP_ALIVE === 'true') {
   setInterval(() => {
     fetch(process.env.RENDER_EXTERNAL_URL, { method: 'HEAD', signal: AbortSignal.timeout(10000) })
       .then(r => console.log('keep-alive ping', { status: r.status }))
