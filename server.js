@@ -27,7 +27,10 @@ const RADIUS_KM = Number(process.env.RADIUS_KM || 2);
 const MAX_RESULTS = Number(process.env.MAX_RESULTS || 6);
 
 // ימות: תווים שמפריעים לפרסור הפקודה
-const clean = s => String(s ?? '').replace(/[&=,.\-]/g, ' ').replace(/\s+/g, ' ').trim();
+const clean = s => String(s ?? '')
+  .replace(/[\u0591-\u05C7]/g, '')              // Hebrew niqqud/cantillation
+  .replace(/[^\u05D0-\u05EAa-zA-Z0-9: ]/g, ' ')  // quotes, brackets, RTL marks, newlines and all other symbols
+  .replace(/\s+/g, ' ').trim();
 // Logs how long each slow step takes, so the Render logs show exactly where a call got stuck.
 const stage = async (name, fn) => {
   const startedAt = Date.now();
@@ -111,10 +114,10 @@ function addressLookupFor(transcript) {
 const ask = (prompt, varName, file) =>
   `read=t-${clean(prompt)}=${varName},,record,/1,${safeFilePart(file)},no,yes,no,1,20`;
 
-// Yemot's documented read schema: variable,yes,maxDigits,minDigits,timeout,Digits,yes&.
-// The explicit timeout field is required before Digits; only one digit is accepted.
+// Keypad input: variable,use_previous,tap,minDigits,maxDigits,timeout,keyboard (same shape as the
+// record command above, where the 3rd field is the input type). One digit only.
 const askKey = (prompt, varName) =>
-  `read=t-${clean(prompt)}=${varName},yes,1,1,20,Digits,yes`;
+  `read=t-${clean(prompt)}=${varName},no,tap,1,1,20,No`;
 
 // ערך ההקלטה מימות עשוי להגיע כנתיב מלא או כשם קובץ בלבד.
 // בהקלטה שמורה לשלוחה /1, נתיב יחסי מפורש מתפרש ביחס לשלוחה זו.
@@ -236,7 +239,7 @@ const ivrHandler = async (req, res) => {
     // keypad confirmation. When the caller presses 1, transcribe the same
     // stored audio again, then proceed with address lookup.
     if (!hasConfirmation) {
-      const heard = clean(transcript).slice(0, 180);
+      const heard = clean(transcript).replace(/:/g, ' ').slice(0, 180);
       // Start geocoding now without delaying the spoken confirmation prompt.
       // The result is awaited only if the caller confirms the address.
       void addressLookupFor(transcript);
