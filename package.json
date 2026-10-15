@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check geocode.js && node --check minyanim.js && node --check stt.js && node --check inspect-yemot.js",
+    "test": "node tests/smoke-flow.mjs"
+  },
   "engines": { "node": ">=20" },
   "dependencies": { "express": "^4.19.2" }
 }
