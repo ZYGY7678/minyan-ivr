@@ -60,6 +60,10 @@ function request(path, method = 'GET') {
 }
 
 try {
+  const health = await request('/healthz');
+  assert.equal(health.status, 200, 'readiness endpoint must report configured service');
+  assert.match(health.body, /"status":"ok"/, 'readiness endpoint must report ok');
+
   const initial = await request('/ivr');
   assert.equal(initial.status, 200, 'initial IVR request must return HTTP 200');
   assert.match(initial.body, /^read=t-/, 'initial response must ask caller to record an address');

@@ -143,6 +143,14 @@ async function download(path) {
   return Buffer.from(await r.arrayBuffer());
 }
 
+// Readiness endpoint used by Render. Do not report healthy when the two required
+// credentials are missing; disclose only variable names, never secret values.
+app.get('/healthz', (req, res) => {
+  const missing = ['YM_TOKEN', 'GROQ_API_KEY'].filter(key => !String(process.env[key] ?? '').trim());
+  if (missing.length) return res.status(503).json({ status: 'misconfigured', missing });
+  return res.status(200).json({ status: 'ok' });
+});
+
 // Accept the IVR flow both on the documented /ivr path and on the service root.
 // Render health probes use HEAD /; keep those probes lightweight and unchanged.
 app.get('/', (req, res) => {
